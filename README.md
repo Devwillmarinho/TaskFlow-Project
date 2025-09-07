@@ -1,4 +1,4 @@
-# Sistema de Tarefas NoSQL - Projeto Acadêmico
+# Sistema de Tarefas NoSQL - Projeto Acadêmico - TaskFlow
 
 Este é um projeto acadêmico que demonstra o uso de banco de dados NoSQL (MongoDB) com operações CRUD completas, desenvolvido com Next.js e TypeScript.
 
@@ -40,7 +40,7 @@ Antes de começar, certifique-se de ter instalado:
 # Se baixou o ZIP, extraia em uma pasta
 
 # Abrir no VS Code
-code todo-nosql-project
+code TaskFlow-project
 \`\`\`
 
 ### 2. Instalar Dependências
