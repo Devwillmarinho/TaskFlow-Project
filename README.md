@@ -233,4 +233,4 @@ Este projeto foi desenvolvido como parte do curso de banco de dados NoSQL, demon
 ---
 
 **Projeto Acadêmico - Sistema de Tarefas NoSQL**  
-Desenvolvido com ❤️ usando MongoDB, Next.js e TypeScript
+Desenvolvido por DevWill usando MongoDB, Next.js e TypeScript
