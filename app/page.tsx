@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -39,9 +40,11 @@ import {
   Check,
   X,
   Filter,
+  Search,
   Calendar,
   TrendingUp,
 } from "lucide-react";
+import { GoogleIcon } from "@/components/icons/GoogleIcon";
 import { Label } from "@/components/ui/label";
 import { DashboardView } from "@/components/views/DashboardView";
 
@@ -49,6 +52,7 @@ interface UserInterface {
   _id: string;
   name: string;
   email: string;
+  image?: string | null;
 }
 
 interface Task {
@@ -58,6 +62,7 @@ interface Task {
   status: "pending" | "in-progress" | "completed";
   priority: "low" | "medium" | "high";
   createdAt: string;
+  userId: string;
   updatedAt: string;
 }
 
@@ -69,6 +74,7 @@ interface Stats {
 }
 
 export default function LandingPage() {
+  const { data: session, status } = useSession();
   const [currentView, setCurrentView] = useState<
     "landing" | "login" | "register" | "dashboard"
   >("landing");
@@ -96,6 +102,8 @@ export default function LandingPage() {
   });
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [filter, setFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
 
   // Login form state
   const [loginForm, setLoginForm] = useState({
@@ -121,10 +129,24 @@ export default function LandingPage() {
     confirmPassword?: string;
   }>({});
 
-  const fetchTasks = async () => {
+  // Debounce da busca para evitar requisições excessivas
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500); // Atraso de 500ms
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchQuery]);
+
+  const fetchTasks = async (search = "") => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/tasks");
+      const url = search
+        ? `/api/tasks?search=${encodeURIComponent(search)}`
+        : "/api/tasks";
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Erro ao buscar tarefas");
       const data = await response.json();
       setTasks(data);
@@ -135,31 +157,36 @@ export default function LandingPage() {
     }
   };
 
-  // Verifica a sessão do usuário ao carregar a página
   useEffect(() => {
-    const checkUserSession = async () => {
+    if (status === "loading") {
       setIsLoading(true);
-      try {
-        const response = await fetch("/api/auth/me");
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-          setCurrentView("dashboard");
-        }
-      } catch (error) {
-        // Nenhuma sessão válida, não faz nada
-      } finally {
-        setIsLoading(false);
+      // Mantém a tela de loading ou a landing page
+      if (currentView !== "landing") {
+        setCurrentView("landing");
       }
-    };
-    checkUserSession();
-  }, []); // Array de dependências vazio para rodar apenas uma vez
+    } else if (status === "authenticated" && session?.user) {
+      setUser({
+        _id: session.user.id, // next-auth usa 'id'
+        name: session.user.name || "Usuário",
+        email: session.user.email || "",
+        image: session.user.image,
+      });
+      setCurrentView("dashboard");
+      setIsLoading(false);
+    } else {
+      // status 'unauthenticated'
+      setIsLoading(false);
+      if (currentView === "dashboard") {
+        setCurrentView("landing");
+      }
+    }
+  }, [session, status]);
 
   useEffect(() => {
     if (currentView === "dashboard") {
-      fetchTasks();
+      fetchTasks(debouncedSearchQuery);
     }
-  }, [currentView]);
+  }, [currentView, debouncedSearchQuery]);
 
   useEffect(() => {
     const total = tasks.length;
@@ -208,26 +235,21 @@ export default function LandingPage() {
       return;
     }
 
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(loginForm),
-      });
+    const result = await signIn("credentials", {
+      redirect: false,
+      email: loginForm.email,
+      password: loginForm.password,
+    });
 
-      const data = await response.json();
+    setIsLoading(false);
 
-      if (!response.ok) {
-        throw new Error(data.message || "Falha no login.");
-      }
-
-      setUser(data.user);
-      setCurrentView("dashboard");
+    if (result?.error) {
+      showToast(result.error, "error");
+    } else if (result?.ok) {
       showToast("Login realizado com sucesso! Bem-vindo de volta!", "success");
-    } catch (error: any) {
-      showToast(error.message || "Ocorreu um erro inesperado.", "error");
-    } finally {
-      setIsLoading(false);
+      // O useEffect cuidará da transição para o dashboard
+    } else {
+      showToast("Ocorreu um erro inesperado durante o login.", "error");
     }
   };
 
@@ -303,13 +325,18 @@ export default function LandingPage() {
         body: JSON.stringify(newTask),
       });
 
-      if (!response.ok) throw new Error("Erro ao criar tarefa");
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Se a resposta não for OK, mas tiver uma mensagem (ex: 401 Não autorizado), mostre-a
+        throw new Error(data.message || "Erro ao criar tarefa");
+      }
 
       setNewTask({ title: "", description: "", priority: "medium" });
       showToast("Tarefa criada com sucesso! 🎉", "success");
       fetchTasks(); // Re-fetch tasks to show the new one
-    } catch (error) {
-      showToast("Falha ao criar tarefa.", "error");
+    } catch (error: any) {
+      showToast(error.message || "Falha ao criar tarefa.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -324,13 +351,17 @@ export default function LandingPage() {
         body: JSON.stringify(updates),
       });
 
-      if (!response.ok) throw new Error("Erro ao atualizar tarefa");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Erro ao atualizar tarefa");
+      }
 
       setEditingTask(null);
       showToast("Tarefa atualizada com sucesso!", "success");
       fetchTasks();
-    } catch (error) {
-      showToast("Falha ao atualizar tarefa.", "error");
+    } catch (error: any) {
+      showToast(error.message || "Falha ao atualizar tarefa.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -341,11 +372,18 @@ export default function LandingPage() {
 
     setIsLoading(true);
     try {
-      await fetch(`/api/tasks/${taskId}`, { method: "DELETE" });
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Falha ao excluir tarefa.");
+      }
       showToast("Tarefa excluída com sucesso", "info");
       fetchTasks();
-    } catch (error) {
-      showToast("Falha ao excluir tarefa.", "error");
+    } catch (error: any) {
+      showToast(error.message || "Falha ao excluir tarefa.", "error");
     } finally {
       setIsLoading(false);
     }
@@ -364,18 +402,11 @@ export default function LandingPage() {
   };
 
   const handleLogout = async () => {
-    setIsLoading(true);
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      setUser(null);
-      setTasks([]); // Limpa as tarefas do estado
-      setCurrentView("landing");
-      showToast("Logout realizado com sucesso. Até logo!", "info");
-    } catch (error) {
-      showToast("Erro ao fazer logout.", "error");
-    } finally {
-      setIsLoading(false);
-    }
+    showToast("Fazendo logout... Até logo!", "info");
+    await signOut({ redirect: false });
+    setUser(null);
+    setTasks([]);
+    setCurrentView("landing");
   };
 
   const ToastNotification = () => {
@@ -445,6 +476,26 @@ export default function LandingPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin} className="space-y-5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => signIn("google")}
+                  disabled={isLoading}
+                >
+                  <GoogleIcon className="mr-2 h-4 w-4" />
+                  Continuar com Google
+                </Button>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Ou continue com
+                    </span>
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-foreground">
                     Email
@@ -582,6 +633,26 @@ export default function LandingPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleRegister} className="space-y-5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => signIn("google")}
+                  disabled={isLoading}
+                >
+                  <GoogleIcon className="mr-2 h-4 w-4" />
+                  Cadastrar com Google
+                </Button>
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">
+                      Ou cadastre-se com seu e-mail
+                    </span>
+                  </div>
+                </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-foreground">
                     Nome completo
@@ -777,6 +848,8 @@ export default function LandingPage() {
           editingTask={editingTask}
           filter={filter}
           isLoading={isLoading}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
           handleLogout={handleLogout}
           setNewTask={setNewTask}
           createTask={createTask}
@@ -853,9 +926,16 @@ export default function LandingPage() {
                 size="lg"
                 variant="outline"
                 className="border-border hover:bg-muted px-8 py-4 text-lg bg-transparent"
+                asChild
               >
-                <Github className="mr-2 h-5 w-5" />
-                Ver Código
+                <a
+                  href="https://github.com/Devwillmarinho/TaskFlow-Project.git"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Github className="mr-2 h-5 w-5" />
+                  Ver Código
+                </a>
               </Button>
             </div>
 

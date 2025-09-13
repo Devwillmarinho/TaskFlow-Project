@@ -1,0 +1,18 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <!-- Cores baseadas no tema padrão do shadcn/ui (azul e violeta) -->
+            <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+    <rect width="256" height="256" rx="48" fill="url(#grad1)"/>
+    
+    <!-- Ícone BarChart3 da biblioteca Lucide, centralizado e estilizado -->
+    <svg x="48" y="48" width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="22" x2="22" y1="20" y2="10" />
+      <line x1="16" x2="16" y1="20" y2="4" />
+      <line x1="10" x2="10" y1="20" y2="14" />
+      <line x1="4" x2="4" y1="20" y2="16" />
+    </svg>
+</svg>

@@ -1,10 +1,5 @@
 import type { FC } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import {
   BarChart3,
@@ -32,12 +28,14 @@ import {
   Filter,
   Calendar,
   TrendingUp,
+  Search,
 } from "lucide-react";
 
 interface UserInterface {
   _id: string;
   name: string;
   email: string;
+  image?: string | null;
 }
 
 interface Task {
@@ -47,6 +45,7 @@ interface Task {
   status: "pending" | "in-progress" | "completed";
   priority: "low" | "medium" | "high";
   createdAt: string;
+  userId: string;
   updatedAt: string;
 }
 
@@ -65,6 +64,8 @@ interface DashboardViewProps {
   editingTask: Task | null;
   filter: string;
   isLoading: boolean;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
   handleLogout: () => void;
   setNewTask: (task: any) => void;
   createTask: () => void;
@@ -83,6 +84,8 @@ export const DashboardView: FC<DashboardViewProps> = ({
   editingTask,
   filter,
   isLoading,
+  searchQuery,
+  setSearchQuery,
   handleLogout,
   setNewTask,
   createTask,
@@ -111,8 +114,19 @@ export const DashboardView: FC<DashboardViewProps> = ({
                 TaskFlow Pro
               </span>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-muted-foreground">Olá, {user.name}</span>
+            <div className="flex items-center gap-3">
+              <div className="text-right hidden sm:block">
+                <p className="font-medium text-sm text-foreground">
+                  {user.name}
+                </p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
+              </div>
+              <Avatar>
+                <AvatarImage src={user.image || undefined} alt={user.name} />
+                <AvatarFallback>
+                  {user.name?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <Button
                 variant="outline"
                 onClick={handleLogout}
@@ -336,7 +350,18 @@ export const DashboardView: FC<DashboardViewProps> = ({
                       Organize sua produtividade
                     </p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        type="text"
+                        placeholder="Buscar tarefas..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-10 w-full md:w-64 border-2 border-border focus:border-primary"
+                      />
+                    </div>
+
                     <Select
                       value={filter}
                       onValueChange={setFilter}

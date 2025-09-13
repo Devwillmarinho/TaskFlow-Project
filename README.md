@@ -92,6 +92,10 @@ cp .env.example .env.local
 
 MONGODB_URI="sua_string_de_conexao_aqui"
 JWT_SECRET="gere_uma_chave_secreta_aqui"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="pode_ser_a_mesma_chave_do_jwt"
+GOOGLE_CLIENT_ID="seu_client_id_do_google_aqui"
+GOOGLE_CLIENT_SECRET="seu_client_secret_do_google_aqui"
 
 # Para gerar uma chave secreta segura, você pode usar este comando no terminal:
 

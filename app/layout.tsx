@@ -1,34 +1,23 @@
-import type { Metadata } from "next";
-import { GeistSans } from "geist/font/sans";
-import { GeistMono } from "geist/font/mono";
-import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import { Inter } from "next/font/google";
+import NextAuthProvider from "@/components/providers/SessionProvider";
 
-export const metadata: Metadata = {
-  title: "TaskFlow",
-  description: "Created with TaskFlow",
-  generator: "DevWill.app",
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata = {
+  title: "TaskFlow Pro",
+  description: "Gerenciador de Tarefas com NoSQL",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <head>
-        <style>{`
-html {
-  font-family: ${GeistSans.style.fontFamily};
-  --font-sans: ${GeistSans.variable};
-  --font-mono: ${GeistMono.variable};
-}
-        `}</style>
-      </head>
-      <body>
-        {children}
-        <Analytics />
+    <html lang="pt-BR">
+      <body className={inter.className}>
+        <NextAuthProvider>{children}</NextAuthProvider>
       </body>
     </html>
   );

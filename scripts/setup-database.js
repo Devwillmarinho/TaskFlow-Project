@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 // Carrega as variáveis de ambiente do arquivo .env.local
 require("dotenv").config({ path: ".env.local" });
@@ -39,6 +39,7 @@ async function setupDatabase() {
     await db.collection("tasks").createIndex({ createdAt: -1 });
     await db.collection("tasks").createIndex({ status: 1 });
     await db.collection("tasks").createIndex({ priority: 1 });
+    await db.collection("tasks").createIndex({ userId: 1 });
     // Índice de texto para busca (pontos extras!)
     await db
       .collection("tasks")
@@ -50,12 +51,14 @@ async function setupDatabase() {
     console.log("✅ Índices da coleção 'users' criados.");
 
     // Inserir dados de exemplo
+    const sampleUserId = new ObjectId(); // ID de usuário de exemplo
     const sampleTasks = [
       {
         title: "Configurar ambiente de desenvolvimento",
         description: "Instalar Node.js, MongoDB e configurar o projeto",
         status: "completed",
         priority: "high",
+        userId: sampleUserId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -64,6 +67,7 @@ async function setupDatabase() {
         description: "Criar operações de Create, Read, Update e Delete",
         status: "in-progress",
         priority: "high",
+        userId: sampleUserId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -72,6 +76,7 @@ async function setupDatabase() {
         description: "Desenvolver interface responsiva com React",
         status: "pending",
         priority: "medium",
+        userId: sampleUserId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -80,6 +85,7 @@ async function setupDatabase() {
         description: "Adicionar funcionalidade para exportar dados",
         status: "pending",
         priority: "low",
+        userId: sampleUserId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
