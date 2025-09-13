@@ -390,7 +390,7 @@ export default function LandingPage() {
 
     return (
       <div
-        className={`fixed top-4 right-4 z-50 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 animate-in slide-in-from-right`}
+        className={`fixed top-4 right-4 z-[100] ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 animate-in slide-in-from-right`}
       >
         <p className="font-medium">{toast.message}</p>
       </div>

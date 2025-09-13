@@ -36,34 +36,46 @@ Antes de começar, certifique-se de ter instalado:
 ### 1. Preparar o Ambiente
 
 \`\`\`bash
+
 # Clonar ou baixar o projeto
+
 # Se baixou o ZIP, extraia em uma pasta
 
 # Abrir no VS Code
+
 code TaskFlow-project
 \`\`\`
 
 ### 2. Instalar Dependências
 
 \`\`\`bash
+
 # No terminal do VS Code (Ctrl + `)
+
 npm install
 \`\`\`
 
 ### 3. Configurar Banco de Dados
 
 #### Opção A: MongoDB Local
+
 \`\`\`bash
+
 # Instalar MongoDB Community Edition
+
 # Windows: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/
+
 # macOS: brew install mongodb-community
+
 # Linux: https://docs.mongodb.com/manual/administration/install-on-linux/
 
 # Iniciar MongoDB
+
 mongod
 \`\`\`
 
 #### Opção B: MongoDB Atlas (Nuvem - Recomendado)
+
 1. Criar conta em [MongoDB Atlas](https://www.mongodb.com/atlas)
 2. Criar cluster gratuito
 3. Obter string de conexão
@@ -71,51 +83,41 @@ mongod
 ### 4. Configurar Variáveis de Ambiente
 
 \`\`\`bash
+
 # Copiar arquivo de exemplo
+
 cp .env.example .env.local
 
-# Editar .env.local com sua string de conexão
-MONGODB_URI=sua_string_de_conexao_aqui
+# Editar .env.local e adicionar as seguintes variáveis:
+
+MONGODB_URI="sua_string_de_conexao_aqui"
+JWT_SECRET="gere_uma_chave_secreta_aqui"
+
+# Para gerar uma chave secreta segura, você pode usar este comando no terminal:
+
+# openssl rand -hex 32
+
 \`\`\`
 
 ### 5. Configurar Banco de Dados
 
 \`\`\`bash
+
 # Executar script de configuração
+
 npm run setup
 \`\`\`
 
 ### 6. Executar o Projeto
 
 \`\`\`bash
+
 # Iniciar servidor de desenvolvimento
+
 npm run dev
 \`\`\`
 
 Abra [http://localhost:3000](http://localhost:3000) no navegador.
-
-## 📁 Estrutura do Projeto
-
-\`\`\`
-todo-nosql-project/
-├── app/
-│   ├── api/
-│   │   └── tasks/
-│   │       ├── route.ts          # GET, POST /api/tasks
-│   │       └── [id]/
-│   │           └── route.ts      # GET, PUT, DELETE /api/tasks/[id]
-│   ├── globals.css               # Estilos globais
-│   ├── layout.tsx               # Layout principal
-│   └── page.tsx                 # Página principal
-├── lib/
-│   └── mongodb.ts               # Configuração MongoDB
-├── scripts/
-│   └── setup-database.js        # Script de configuração
-├── components/ui/               # Componentes UI (shadcn)
-├── .env.example                 # Exemplo de variáveis
-├── package.json                 # Dependências
-└── README.md                    # Este arquivo
-\`\`\`
 
 ## 🔧 Extensões Recomendadas para VS Code
 
@@ -131,50 +133,57 @@ Instale estas extensões para melhor experiência:
 ## 📊 Funcionalidades Implementadas
 
 ### CRUD Completo
+
 - **Create**: Criar novas tarefas com título, descrição e prioridade
 - **Read**: Listar e visualizar tarefas com filtros
 - **Update**: Editar tarefas existentes (título, descrição, status, prioridade)
 - **Delete**: Remover tarefas
 
 ### Modelagem NoSQL
+
 - **Documentos MongoDB**: Estrutura flexível para tarefas
 - **Índices**: Otimização para consultas por data, status e prioridade
 - **Timestamps**: Controle de criação e atualização
 
 ### Interface e UX
+
 - **Dashboard**: Métricas em tempo real
 - **Filtros**: Por status (todas, pendentes, em progresso, concluídas)
 - **Responsivo**: Funciona em desktop e mobile
 - **Feedback Visual**: Loading states e confirmações
 
 ### Exportação de Dados
+
 - **JSON Export**: Download completo dos dados
 - **Formato Estruturado**: Dados organizados para análise
 
 ## 🎯 Justificativa da Modelagem NoSQL
 
 ### Por que MongoDB?
+
 1. **Flexibilidade**: Estrutura de documentos permite evolução do schema
 2. **Performance**: Consultas rápidas com índices apropriados
 3. **Escalabilidade**: Horizontal scaling para crescimento futuro
 4. **JSON Nativo**: Integração natural com JavaScript/Node.js
 
 ### Estrutura do Documento
+
 \`\`\`javascript
 {
-  _id: ObjectId,
-  title: String,
-  description: String,
-  status: "pending" | "in-progress" | "completed",
-  priority: "low" | "medium" | "high",
-  createdAt: ISOString,
-  updatedAt: ISOString
+\_id: ObjectId,
+title: String,
+description: String,
+status: "pending" | "in-progress" | "completed",
+priority: "low" | "medium" | "high",
+createdAt: ISOString,
+updatedAt: ISOString
 }
 \`\`\`
 
 ## 🚀 Deploy (Opcional)
 
 ### Vercel + MongoDB Atlas
+
 1. Fazer push para GitHub
 2. Conectar repositório no Vercel
 3. Adicionar variável `MONGODB_URI` no Vercel
@@ -183,32 +192,42 @@ Instale estas extensões para melhor experiência:
 ## 📝 Comandos Úteis
 
 \`\`\`bash
+
 # Desenvolvimento
-npm run dev          # Iniciar servidor de desenvolvimento
-npm run build        # Build para produção
-npm run start        # Iniciar servidor de produção
-npm run lint         # Verificar código
+
+npm run dev # Iniciar servidor de desenvolvimento
+npm run build # Build para produção
+npm run start # Iniciar servidor de produção
+npm run lint # Verificar código
 
 # Banco de dados
-npm run setup        # Configurar banco e dados iniciais
+
+npm run setup # Configurar banco e dados iniciais
 \`\`\`
 
 ## 🐛 Solução de Problemas
 
 ### Erro de Conexão MongoDB
+
 - Verificar se MongoDB está rodando
 - Conferir string de conexão no `.env.local`
 - Para Atlas: verificar IP whitelist
 
 ### Porta 3000 em uso
+
 \`\`\`bash
+
 # Usar porta diferente
+
 npm run dev -- -p 3001
 \`\`\`
 
 ### Problemas de Dependências
+
 \`\`\`bash
+
 # Limpar e reinstalar
+
 rm -rf node_modules package-lock.json
 npm install
 \`\`\`
